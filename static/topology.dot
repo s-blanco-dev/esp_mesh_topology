@@ -1,0 +1,16 @@
+strict graph {
+
+
+	"8C:D0:B2:A8:A0:D6" [ label="8C:D0:B2:A8:A0:D6
+T: 20.0°C
+H: 80.0%",  weight=0 ];
+
+	"8C:D0:B2:A8:A0:D6" -- "DC:B4:D9:8D:6D:E8" [  weight=0 ];
+
+	"DC:B4:D9:8D:6D:E8" [ label="DC:B4:D9:8D:6D:E8
+T: 20.0°C
+H: 80.0%",  weight=0 ];
+
+	"DC:B4:D9:8D:6D:E8" -- "8C:D0:B2:A8:A0:D6" [  weight=0 ];
+
+}

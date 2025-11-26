@@ -1,0 +1,31 @@
+strict graph {
+
+
+	"MAC4" [ color="2", colorscheme="reds3", fillcolor="1", style="filled",  weight=0 ];
+
+	"MAC4" -- "MAC2" [  weight=0 ];
+
+	"ROOT" [ color="2", colorscheme="blues3", fillcolor="1", label="C8:F0:81:21:F1 
+ (ROOT)", style="filled",  weight=0 ];
+
+	"ROOT" -- "MAC2" [  weight=0 ];
+
+	"ROOT" -- "MAC1" [  weight=0 ];
+
+	"MAC1" [ color="2", colorscheme="greens3", fillcolor="1", root="true",  weight=0 ];
+
+	"MAC1" -- "ROOT" [  weight=0 ];
+
+	"MAC2" [ color="2", colorscheme="purples3", fillcolor="1", style="filled",  weight=0 ];
+
+	"MAC2" -- "ROOT" [  weight=0 ];
+
+	"MAC2" -- "MAC3" [  weight=0 ];
+
+	"MAC2" -- "MAC4" [  weight=0 ];
+
+	"MAC3" [ color="2", colorscheme="ylorbr3", fillcolor="1", style="filled",  weight=0 ];
+
+	"MAC3" -- "MAC2" [  weight=0 ];
+
+}
