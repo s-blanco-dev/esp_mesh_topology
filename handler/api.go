@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 
 	"mesh_topology/models"
 
@@ -13,8 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var ROOT_NODE models.Node
-var NUM_NODES int = 5
+var NUM_NODES int = 6
 var BUFFER []models.Node
 
 func PostMeshData(c *gin.Context) {
@@ -24,15 +24,6 @@ func PostMeshData(c *gin.Context) {
 		return
 	}
 
-	/* MIENTRAS NO LLEGUEN TODOS LOS PAQUETES:
-	- No genero el grafo
-	- Guardo nodo en buffer y espero por los restantes
-	*/
-	if node.IsRoot {
-		ROOT_NODE = node
-	}
-
-	BUFFER = append(BUFFER, ROOT_NODE)
 	BUFFER = append(BUFFER, node)
 
 	if len(BUFFER) < NUM_NODES {
@@ -41,34 +32,96 @@ func PostMeshData(c *gin.Context) {
 		return
 	}
 
-	// Creamos el grafo
-	g := graph.New(graph.StringHash, graph.Rooted())
+	// ---------------------------------------------------------------
+	// REORDENO BUFFER para que el root esté primero
+	// ---------------------------------------------------------------
+	var reordered []models.Node
+	var root models.Node
+	foundRoot := false
 
-	// Agrega nodos
 	for _, n := range BUFFER {
-		_ = g.AddVertex(n.SelfMAC, graph.VertexAttribute("label",
-			fmt.Sprintf("%s\nT: %.1f°C\nH: %.1f%%", n.SelfMAC, n.Temp, n.Humidity)))
+		if n.IsRoot {
+			root = n
+			foundRoot = true
+			break
+		}
 	}
 
-	// Agrega aristas
+	if foundRoot {
+		reordered = append(reordered, root)
+		for _, n := range BUFFER {
+			if !n.IsRoot {
+				reordered = append(reordered, n)
+			}
+		}
+	} else {
+		reordered = BUFFER
+	}
+
+	BUFFER = reordered
+	// ---------------------------------------------------------------
+
+	g := graph.New(graph.StringHash, graph.Tree())
+
+	// agrega nodos
+	for _, n := range BUFFER {
+		if n.IsRoot {
+			_ = g.AddVertex(n.SelfMAC,
+				graph.VertexAttribute("label", fmt.Sprintf("%s\n: ROOT", n.SelfMAC)),
+				graph.VertexAttribute("fillcolor", "lightcoral"),
+				graph.VertexAttribute("color", "red"),
+				graph.VertexAttribute("penwidth", "2"),
+				graph.VertexAttribute("style", "filled"),
+				graph.VertexAttribute("shape", "doublecircle"),
+			)
+		} else {
+			_ = g.AddVertex(n.SelfMAC,
+				graph.VertexAttribute("label", fmt.Sprintf("%s\nT: %.1f°C\nH: %.1f%%", n.SelfMAC, n.Temp, n.Humidity)),
+				graph.VertexAttribute("shape", "circle"),
+			)
+		}
+	}
+
+	// agrega aristas
 	for _, n := range BUFFER {
 		if !n.IsRoot {
 			_ = g.AddEdge(n.ParentMAC, n.SelfMAC)
 		}
 	}
 
-	// Guarda el grafo en formato DOT
-	f, err := os.Create("static/topology.dot")
+	// ------------- Crear archivo DOT --------------
+	dotFile := "static/topology.dot"
+	f, err := os.Create(dotFile)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	defer f.Close()
-
 	_ = draw.DOT(g, f)
+	f.Close()
 
-	// Genera el PNG usando Graphviz
-	_ = exec.Command("dot", "-Tpng", "static/topology.dot", "-o", "static/topology.png").Run()
+	// ---------------------------------------------------------------
+	// inserto rank=min para asegurar que el root esté arriba (marcha mao meno)
+	// ---------------------------------------------------------------
+	rootMAC := BUFFER[0].SelfMAC // porque lo pusimos primero
+
+	contentBytes, _ := os.ReadFile(dotFile)
+	content := string(contentBytes)
+
+	// luego de la primera línea "digraph G {", insertamos el rank
+	lines := strings.Split(content, "\n")
+	for i, line := range lines {
+		if strings.Contains(line, "{") {
+			lines = append(lines[:i+1],
+				append([]string{fmt.Sprintf("    { rank=min; \"%s\"; }", rootMAC)}, lines[i+1:]...)...)
+			break
+		}
+	}
+
+	_ = os.WriteFile(dotFile, []byte(strings.Join(lines, "\n")), 0644)
+
+	// ---------------------------------------------------------------
+
+	_ = exec.Command("dot", "-Tpng", dotFile, "-o", "static/topology.png").Run()
 
 	c.JSON(http.StatusOK, gin.H{"status": "graph updated", "nodes": len(BUFFER)})
 	BUFFER = nil
