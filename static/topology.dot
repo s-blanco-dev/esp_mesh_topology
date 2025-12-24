@@ -1,16 +1,24 @@
 strict graph {
+    { rank=min; "8C:D0:B2:A8:A0:D6"; }
 
 
-	"8C:D0:B2:A8:A0:D6" [ label="8C:D0:B2:A8:A0:D6
-T: 20.0°C
-H: 80.0%",  weight=0 ];
+	"DC:B4:D9:8D:51:20" [ label="DC:B4:D9:8D:51:20
+T: 24.0°C
+H: 45.0%", shape="circle",  weight=0 ];
+
+	"DC:B4:D9:8D:51:20" -- "8C:D0:B2:A8:A0:D6" [  weight=0 ];
+
+	"8C:D0:B2:A8:A0:D6" [ color="red", fillcolor="lightcoral", label="8C:D0:B2:A8:A0:D6
+: ROOT", penwidth="2", shape="doublecircle", style="filled",  weight=0 ];
+
+	"8C:D0:B2:A8:A0:D6" -- "DC:B4:D9:8D:6D:E8" [  weight=0 ];
 
 	"8C:D0:B2:A8:A0:D6" -- "DC:B4:D9:8D:51:20" [  weight=0 ];
 
-	"DC:B4:D9:8D:51:20" [ label="DC:B4:D9:8D:51:20
-T: 20.0°C
-H: 80.0%",  weight=0 ];
+	"DC:B4:D9:8D:6D:E8" [ label="DC:B4:D9:8D:6D:E8
+T: 0.0°C
+H: 2.0%", shape="circle",  weight=0 ];
 
-	"DC:B4:D9:8D:51:20" -- "8C:D0:B2:A8:A0:D6" [  weight=0 ];
+	"DC:B4:D9:8D:6D:E8" -- "8C:D0:B2:A8:A0:D6" [  weight=0 ];
 
 }

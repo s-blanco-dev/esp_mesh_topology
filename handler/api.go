@@ -14,7 +14,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var NUM_NODES int = 6
+// acá depende de cuántos nodos tenga la red. En un futuro la idea sería que el tamaño del buffer se actualice cada tanto en base a la cantidad de nodos en la red. En tal caso el gateway debería enviar una actualización de la cantidad de nodos en la red cada vez que cambia la topología
+var NUM_NODES int = 8
 var BUFFER []models.Node
 
 func PostMeshData(c *gin.Context) {
@@ -34,6 +35,8 @@ func PostMeshData(c *gin.Context) {
 
 	// ---------------------------------------------------------------
 	// REORDENO BUFFER para que el root esté primero
+	// la verdad que esto no sirve de mucho, pero hace que
+	// el nodo raíz aparezca de manera más central
 	// ---------------------------------------------------------------
 	var reordered []models.Node
 	var root models.Node
@@ -102,12 +105,11 @@ func PostMeshData(c *gin.Context) {
 	// ---------------------------------------------------------------
 	// inserto rank=min para asegurar que el root esté arriba (marcha mao meno)
 	// ---------------------------------------------------------------
-	rootMAC := BUFFER[0].SelfMAC // porque lo pusimos primero
+	rootMAC := BUFFER[0].SelfMAC
 
 	contentBytes, _ := os.ReadFile(dotFile)
 	content := string(contentBytes)
 
-	// luego de la primera línea "digraph G {", insertamos el rank
 	lines := strings.Split(content, "\n")
 	for i, line := range lines {
 		if strings.Contains(line, "{") {
