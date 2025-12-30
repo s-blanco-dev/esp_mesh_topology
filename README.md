@@ -3,6 +3,8 @@
 API desarrollada en Go que recibe paquetes de una red en malla de dispositivos ESP32 o ESP8266 y elabora una representación gráfica, en forma de grafo, que describe la topología de la red y exhibe la información de cada nodo.
 Está pensada para nodos constituidos de ESP32 con sensores de temperatura y humedad.
 
+- PROYECTO WSN CON ESP-WIFI-MESH: https://github.com/s-blanco-dev/esp_mesh_network
+
 ## Único endpoint: POST /v1/update
 
 - Recibe el reporte de un nodo de la red mesh (MAC del propio nodo y su padre, temperatura, humedad y si es el nodo raíz). El servidor acumula estos reportes en un buffer hasta reunir el número esperado de nodos y luego genera la imagen de la topología.
